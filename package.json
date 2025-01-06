@@ -1,0 +1,15 @@
+{
+  "name": "rotzooi_repo",
+  "version": "1.0.0",
+  "description": "**_Rotzooi_** (Dutch)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjpieters/rotzooi_repo.git"
+  },
+  "devDependencies": {
+    "@types/github-script": "github:actions/github-script"
+  },
+  "dependencies": {
+    "@octokit/plugin-paginate-graphql": "^4.0.1"
+  }
+}
