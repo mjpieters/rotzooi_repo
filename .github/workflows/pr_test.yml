@@ -1,0 +1,42 @@
+name: "Generate Type Completeness Report"
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_NAME: 'prefect'
+
+jobs:
+  generate_type_completeness_report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Dump event context
+      env:
+        EVENT_CONTEXT: "${{ toJSON(github.event) }}"
+        EVENT_PATH: "${{ github.event_path }}"
+      run:
+        echo "$EVENT_CONTEXT"
+        cat "$EVENT_PATH"
+  
+    - uses: actions/checkout@v4.2.2
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5.1.0
+
+    - name: Generate report JSON
+      run: |
+        # Generate the type completeness report for your Python project.
+        # This assumes your Python project can be installed as editable
+        # from files in the current directory
+        uv tool run --with "$PROJECT_NAME" pyright \
+          --ignoreexternal --outputjson \
+          --verifytypes $PROJECT_NAME > type_completeness_report.json || true
+
+    - name: Upload report JSON
+      uses: actions/upload-artifact@v4
+      with:
+        name: type_completeness_report
+        path: type_completeness_report.json

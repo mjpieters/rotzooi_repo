@@ -1,0 +1,43 @@
+on:
+  workflow_run:
+    workflows:
+      - "Generate Type Completeness Report"
+    types:
+      - completed
+  
+permissions:
+  contents: read
+
+jobs:
+  generate_graph:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    permissions:
+      pull-requests: write
+
+    steps:
+    - name: Dump event context
+      env:
+        EVENT_CONTEXT: "${{ toJSON(github.event) }}"
+        EVENT_PATH: "${{ github.event_path }}"
+      run:
+        echo "$EVENT_CONTEXT"
+        cat "$EVENT_PATH"
+    
+    - name: Download report JSON
+      uses: actions/download-artifact@v4
+      with:
+        name: type_completeness_report
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        run-id: ${{ github.event.workflow_run.id }}
+
+    - name: Generate report visualisation
+      uses: mjpieters/pyright-analysis-action@v0.2.0
+      env:
+        # Smokeshow authorisation key for your project. Optional, but recommended.
+        # See documentation for how to get one.
+        SMOKESHOW_AUTH_KEY: ${{ secrets.SMOKESHOW_AUTH_KEY }}
+      with:
+        report: type_completeness_report.json
+        comment_on_pr: true
